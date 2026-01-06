@@ -1,3 +1,4 @@
+import code
 from fastapi import FastAPI, HTTPException, File, UploadFile, Form, Depends
 from sqlalchemy import select
 from app.schemas import PostCreate, PostResponse
@@ -50,7 +51,7 @@ async def upload_file(
             post = Post(
                 caption = caption,
                 url = upload_result.url,
-                file_type = "video" if file.content_type.startswith("video/") else "image",
+                file_type = "video" if file.content_type.startswith("video/") else "image", # type: ignore
                 file_name = upload_result.name
             )
             session.add(post)
@@ -87,3 +88,24 @@ async def get_feed(
         )
 
     return {"posts": posts_data}
+
+
+@app.delete("/posts/{post.id}")
+async def delete_post(post_id: str, session: AsyncSession = Depends(get_async_session)):
+    try:
+        post_uuid = uuid.UUID(post_id) # to convert the string into uuid for vlid comparision
+
+        result = await session.execute(select(Post).where(Post.id == post_uuid))
+        post = result.scalars().first()
+
+        if not post:
+            raise HTTPException(status_code=404, detail="Post not found.")
+        
+        await session.delete(post)
+        await session.commit()
+
+        return {"success": True, "message": "Post deleted successfully."}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
