@@ -1,7 +1,7 @@
 fastapi
 python-dotenv
 fastapi-users[sqlalchemy]
-imagekitio
+imagekitio == 4.2.0
 uvicorn
 aiosqlite
 sqlalchemy
