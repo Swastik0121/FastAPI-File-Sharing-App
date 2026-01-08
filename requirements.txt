@@ -6,3 +6,4 @@ uvicorn
 aiosqlite
 sqlalchemy
 python-multipart
+streamlit
